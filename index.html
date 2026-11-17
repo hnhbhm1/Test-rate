@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#050811" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="حاسبة التغير" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>نسبة التغير | الحاسبة الذكية</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            arabic: ['Cairo', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              bgDeep: '#050811',
+              bgCard: '#0a0e17',
+              bgSurface: '#101726',
+              cyan: '#00f2fe',
+              blue: '#00c6ff',
+              green: '#00ff9d',
+              red: '#ff3b5c',
+              orange: '#ff9900',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg-deep: #050811;
+      --bg-card: #0a0e17;
+      --neon-cyan: #00f2fe;
+      --neon-blue: #00c6ff;
+      --neon-green: #00ff9d;
+      --neon-red: #ff3b5c;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--bg-deep);
+      color: #f0f6fc;
+      min-height: 100dvh;
+      margin: 0;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(0, 198, 255, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(0, 242, 254, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+    }
+
+    .neon-title {
+      text-shadow: 0 0 12px rgba(0, 242, 254, 0.55);
+    }
+
+    .cyber-card {
+      background: linear-gradient(155deg, rgba(16, 23, 38, 0.94), rgba(10, 14, 23, 0.98));
+      border: 1px solid rgba(0, 242, 254, 0.24);
+      box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.75),
+                  0 0 14px rgba(0, 242, 254, 0.05);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cyber-card:focus-within {
+      border-color: rgba(0, 242, 254, 0.55);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.85),
+                  0 0 18px rgba(0, 242, 254, 0.14);
+    }
+
+    /* حقول الأرقام: محاذاة من اليسار لليمين لمنع الكتابة المعكوسة نهائياً */
+    .cyber-input {
+      background: rgba(5, 8, 17, 0.92);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: #ffffff;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+      transition: all 0.2s ease;
+    }
+
+    .cyber-input:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.18), 0 0 12px rgba(0, 242, 254, 0.25);
+      background: #040711;
+    }
+
+    .cyber-input::placeholder {
+      color: rgba(148, 163, 184, 0.45);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      font-size: 0.74rem;
+    }
+
+    /* مفتاح التبديل المدمج */
+    .toggle-checkbox:checked + .toggle-slider {
+      background: linear-gradient(90deg, #00c6ff, #00f2fe);
+      border-color: #00f2fe;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.45);
+    }
+
+    .toggle-checkbox:checked + .toggle-slider::before {
+      transform: translateX(-16px);
+      background-color: #050811;
+    }
+
+    .toggle-slider {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background-color: #161f33;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 14px;
+      height: 14px;
+      background-color: #94a3b8;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    /* أزرار الضرب والقسمة */
+    .op-btn {
+      background: rgba(5, 8, 17, 0.85);
+      border: 1px solid rgba(0, 242, 254, 0.22);
+      color: #94a3b8;
+      transition: all 0.15s ease;
+    }
+
+    .op-btn.active {
+      background: linear-gradient(135deg, #00f2fe, #00c6ff);
+      border-color: #00f2fe;
+      color: #040814;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.38);
+      font-weight: 800;
+    }
+
+    .btn-neon-primary {
+      background: linear-gradient(135deg, #00c6ff 0%, #00f2fe 100%);
+      color: #040814;
+      font-weight: 800;
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.38);
+      transition: all 0.18s ease;
+    }
+
+    .btn-neon-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-neon-swap {
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.42);
+      color: #00f2fe;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.12);
+      transition: all 0.18s ease;
+    }
+
+    .btn-neon-swap:hover {
+      background: rgba(0, 242, 254, 0.2);
+    }
+
+    .btn-neon-swap:active {
+      transform: scale(0.96);
+    }
+
+    /* حالات صندوق النتيجة */
+    .result-positive {
+      border-color: rgba(0, 255, 157, 0.5) !important;
+      box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.85), 0 0 22px rgba(0, 255, 157, 0.15) !important;
+    }
+
+    .result-negative {
+      border-color: rgba(255, 59, 92, 0.5) !important;
+      box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.85), 0 0 22px rgba(255, 59, 92, 0.15) !important;
+    }
+
+    .result-neutral {
+      border-color: rgba(0, 242, 254, 0.32) !important;
+    }
+
+    .text-glow-positive {
+      color: #00ff9d;
+      text-shadow: 0 0 16px rgba(0, 255, 157, 0.55);
+    }
+
+    .text-glow-negative {
+      color: #ff3b5c;
+      text-shadow: 0 0 16px rgba(255, 59, 92, 0.55);
+    }
+
+    .text-glow-neutral {
+      color: #00f2fe;
+      text-shadow: 0 0 14px rgba(0, 242, 254, 0.5);
+    }
+
+    .fx-disabled {
+      opacity: 0.42;
+    }
+
+    /* شريط السجل الأفقي المدمج */
+    .history-scroll::-webkit-scrollbar {
+      height: 3px;
+    }
+    .history-scroll::-webkit-scrollbar-thumb {
+      background: rgba(0, 242, 254, 0.35);
+      border-radius: 999px;
+    }
+
+    /* أنماط مدمجة احتياطية لضمان عمل التصميم بالكامل بدون إنترنت (Offline Mode) */
+    body { display: flex; flex-direction: column; justify-content: space-between; min-height: 100dvh; padding: 0.5rem; }
+    main { width: 100%; max-width: 42rem; margin: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+    .grid-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .col-span-7 { grid-column: span 7 / span 7; }
+    .col-span-5 { grid-column: span 5 / span 5; }
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .hidden { display: none !important; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .w-full { width: 100%; }
+    .text-center { text-align: center; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  </style>
+</head>
+<body class="p-2 sm:p-4 flex flex-col justify-between min-h-[100dvh]">
+
+  <main class="w-full max-w-2xl mx-auto flex flex-col gap-2 sm:gap-3 my-auto">
+
+    <!-- 1. الترويسة المدمجة (Header) -->
+    <header class="cyber-card rounded-xl px-3 py-2 flex items-center justify-between gap-2 relative overflow-hidden">
+      <div class="absolute top-0 inset-x-10 h-0.5 bg-gradient-to-r from-transparent via-cyber-cyan to-transparent shadow-[0_0_10px_#00f2fe]"></div>
+
+      <div class="flex items-center gap-1.5 min-w-0">
+        <h1 class="text-xs sm:text-lg font-black text-white neon-title truncate">
+          نسبة التغير <span class="text-cyber-cyan font-normal">|</span> الحاسبة الذكية
+        </h1>
+        <span id="offlineStatusBadge" class="shrink-0 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[9px] font-bold">
+          بدون نت ✓
+        </span>
+      </div>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          id="installAppBtn"
+          onclick="triggerInstallApp()"
+          class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyber-cyan/20 to-cyber-blue/20 hover:from-cyber-cyan/30 hover:to-cyber-blue/30 active:scale-95 border border-cyber-cyan/50 text-cyber-cyan text-[10px] sm:text-xs font-extrabold flex items-center gap-1 shadow-[0_0_10px_rgba(0,242,254,0.2)] transition"
+          title="تثبيت الحاسبة في الهاتف للعمل بدون إنترنت"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span id="installBtnText">تثبيت للهاتف</span>
+        </button>
+
+        <div class="hidden sm:block px-2.5 py-0.5 rounded-full bg-[#060a14] border border-cyber-cyan/35">
+          <code dir="ltr" class="font-mono text-[10px] sm:text-xs font-bold text-cyber-cyan">
+            (V2 - V1) / V1 × 100%
+          </code>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. الخانتان جنباً إلى جنب (حتى على الهاتف لضمان ظهور كل شيء في شاشة واحدة) -->
+    <section class="grid grid-cols-2 gap-2 sm:gap-3">
+
+      <!-- الخانة الأولى: V1 الأساس -->
+      <div class="cyber-card rounded-xl p-2.5 sm:p-3.5 flex flex-col justify-between gap-2">
+        <!-- رأس الخانة + زر اللصق -->
+        <div class="flex items-center justify-between gap-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-6 h-6 rounded-md bg-cyber-cyan/15 border border-cyber-cyan/40 flex items-center justify-center font-mono font-bold text-cyber-cyan text-xs shrink-0">
+              V1
+            </span>
+            <h2 class="text-xs sm:text-sm font-extrabold text-white truncate">الأساس</h2>
+          </div>
+
+          <button
+            type="button"
+            id="pasteBtn1"
+            onclick="handleSmartPaste('val1', 'pasteBtn1')"
+            class="shrink-0 px-2.5 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/25 active:scale-95 border border-cyber-cyan/45 text-cyber-cyan text-[11px] font-bold flex items-center gap-1 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <span>لصق</span>
+          </button>
+        </div>
+
+        <!-- حقل الإدخال الرقمي (من اليسار لليمين لمنع انعكاس الأرقام) -->
+        <div class="relative">
+          <input
+            id="val1"
+            type="text"
+            inputmode="decimal"
+            dir="ltr"
+            placeholder="0.00"
+            autocomplete="off"
+            class="cyber-input w-full rounded-lg py-2 pl-2.5 pr-7 text-base sm:text-lg font-mono font-extrabold"
+          />
+          <button
+            type="button"
+            onclick="clearField('val1')"
+            title="مسح"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 text-xs px-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- قسم المصارفة للخانة الأولى -->
+        <div id="fxBox1" class="rounded-lg bg-[#050812] border border-slate-800/90 p-2 space-y-1.5 transition-colors">
+          <div class="flex items-center justify-between">
+            <label for="fxToggle1" class="text-[11px] font-bold text-slate-300 cursor-pointer select-none flex items-center gap-1">
+              <span>مصارفة</span>
+              <span id="saveTag1" class="text-[9px] text-emerald-400 opacity-0 transition-opacity">✓</span>
+            </label>
+            <div>
+              <input type="checkbox" id="fxToggle1" class="toggle-checkbox sr-only" />
+              <label for="fxToggle1" class="toggle-slider block"></label>
+            </div>
+          </div>
+
+          <!-- إدخال سعر الصرف + ضرب/قسمة + زر حفظ الرقم -->
+          <div id="fxControls1" class="space-y-1.5 transition-opacity">
+            <div class="flex items-stretch gap-1">
+              <input
+                id="fxRate1"
+                type="text"
+                inputmode="decimal"
+                dir="ltr"
+                placeholder="552"
+                value="552"
+                class="cyber-input w-full min-w-0 rounded-md py-1 px-2 text-xs sm:text-sm font-mono font-bold"
+              />
+              <button
+                type="button"
+                onclick="saveRateToHistory(1)"
+                title="حفظ الرقم في السجل"
+                class="shrink-0 px-2 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold transition"
+              >
+                حفظ+
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                id="opMul1"
+                onclick="setBoxOp(1, 'mul')"
+                class="op-btn active rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1"
+              >
+                <span>ضرب</span>
+                <span class="font-mono">×</span>
+              </button>
+              <button
+                type="button"
+                id="opDiv1"
+                onclick="setBoxOp(1, 'div')"
+                class="op-btn rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1"
+              >
+                <span>قسمة</span>
+                <span class="font-mono">÷</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- شارة الناتج الفعلي -->
+          <div class="pt-1 border-t border-slate-800/80 flex items-center justify-between text-[10px] sm:text-xs">
+            <span class="text-slate-400">الفعلي:</span>
+            <span id="effBadge1" dir="ltr" class="font-mono font-bold text-cyber-cyan truncate max-w-[95px] sm:max-w-[140px]">
+              0
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الخانة الثانية: V2 المقارنة -->
+      <div class="cyber-card rounded-xl p-2.5 sm:p-3.5 flex flex-col justify-between gap-2">
+        <!-- رأس الخانة + زر اللصق -->
+        <div class="flex items-center justify-between gap-1">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-6 h-6 rounded-md bg-cyber-blue/15 border border-cyber-blue/40 flex items-center justify-center font-mono font-bold text-cyber-cyan text-xs shrink-0">
+              V2
+            </span>
+            <h2 class="text-xs sm:text-sm font-extrabold text-white truncate">المقارنة</h2>
+          </div>
+
+          <button
+            type="button"
+            id="pasteBtn2"
+            onclick="handleSmartPaste('val2', 'pasteBtn2')"
+            class="shrink-0 px-2.5 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/25 active:scale-95 border border-cyber-cyan/45 text-cyber-cyan text-[11px] font-bold flex items-center gap-1 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <span>لصق</span>
+          </button>
+        </div>
+
+        <!-- حقل الإدخال الرقمي (من اليسار لليمين لمنع انعكاس الأرقام) -->
+        <div class="relative">
+          <input
+            id="val2"
+            type="text"
+            inputmode="decimal"
+            dir="ltr"
+            placeholder="0.00"
+            autocomplete="off"
+            class="cyber-input w-full rounded-lg py-2 pl-2.5 pr-7 text-base sm:text-lg font-mono font-extrabold"
+          />
+          <button
+            type="button"
+            onclick="clearField('val2')"
+            title="مسح"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-200 text-xs px-1"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- قسم المصارفة للخانة الثانية -->
+        <div id="fxBox2" class="rounded-lg bg-[#050812] border border-slate-800/90 p-2 space-y-1.5 transition-colors">
+          <div class="flex items-center justify-between">
+            <label for="fxToggle2" class="text-[11px] font-bold text-slate-300 cursor-pointer select-none flex items-center gap-1">
+              <span>مصارفة</span>
+              <span id="saveTag2" class="text-[9px] text-emerald-400 opacity-0 transition-opacity">✓</span>
+            </label>
+            <div>
+              <input type="checkbox" id="fxToggle2" class="toggle-checkbox sr-only" />
+              <label for="fxToggle2" class="toggle-slider block"></label>
+            </div>
+          </div>
+
+          <!-- إدخال سعر الصرف + ضرب/قسمة + زر حفظ الرقم -->
+          <div id="fxControls2" class="space-y-1.5 transition-opacity">
+            <div class="flex items-stretch gap-1">
+              <input
+                id="fxRate2"
+                type="text"
+                inputmode="decimal"
+                dir="ltr"
+                placeholder="552"
+                value="552"
+                class="cyber-input w-full min-w-0 rounded-md py-1 px-2 text-xs sm:text-sm font-mono font-bold"
+              />
+              <button
+                type="button"
+                onclick="saveRateToHistory(2)"
+                title="حفظ الرقم في السجل"
+                class="shrink-0 px-2 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold transition"
+              >
+                حفظ+
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                id="opMul2"
+                onclick="setBoxOp(2, 'mul')"
+                class="op-btn active rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1"
+              >
+                <span>ضرب</span>
+                <span class="font-mono">×</span>
+              </button>
+              <button
+                type="button"
+                id="opDiv2"
+                onclick="setBoxOp(2, 'div')"
+                class="op-btn rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1"
+              >
+                <span>قسمة</span>
+                <span class="font-mono">÷</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- شارة الناتج الفعلي -->
+          <div class="pt-1 border-t border-slate-800/80 flex items-center justify-between text-[10px] sm:text-xs">
+            <span class="text-slate-400">الفعلي:</span>
+            <span id="effBadge2" dir="ltr" class="font-mono font-bold text-cyber-cyan truncate max-w-[95px] sm:max-w-[140px]">
+              0
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 3. سجل أرقام الضرب والقسمة المحفوظة (History Log) -->
+    <section class="cyber-card rounded-xl px-3 py-2 flex flex-col gap-1.5">
+      <div class="flex items-center justify-between text-[11px]">
+        <div class="flex items-center gap-1.5 text-slate-300 font-bold">
+          <span class="w-2 h-2 rounded-full bg-cyber-cyan"></span>
+          <span>سجل أرقام الضرب / القسمة المحفوظة:</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">تطبيق على:</span>
+          <button
+            type="button"
+            id="targetBtn1"
+            onclick="setHistoryTarget(1)"
+            class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyber-cyan text-[#040814]"
+          >
+            V1
+          </button>
+          <button
+            type="button"
+            id="targetBtn2"
+            onclick="setHistoryTarget(2)"
+            class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-300"
+          >
+            V2
+          </button>
+          <button
+            type="button"
+            id="targetBtnBoth"
+            onclick="setHistoryTarget('both')"
+            class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300"
+          >
+            معاً
+          </button>
+        </div>
+      </div>
+
+      <div id="historyList" class="history-scroll flex items-center gap-1.5 overflow-x-auto pb-0.5 min-h-[26px]">
+        <!-- يتم توليد أزرار السجل هنا تلقائياً -->
+      </div>
+    </section>
+
+    <!-- 4. أزرار التحكم: تحديث/حساب + زر العكس (تبديل القيمتين) -->
+    <section class="grid grid-cols-12 gap-2">
+      <button
+        type="button"
+        id="calcBtn"
+        onclick="handleCalculateClick()"
+        class="btn-neon-primary col-span-7 py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>تحديث / حساب</span>
+      </button>
+
+      <button
+        type="button"
+        id="swapBtn"
+        onclick="swapValues()"
+        class="btn-neon-swap col-span-5 py-2.5 px-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer"
+        title="عكس القيمة الأولى مكان الثانية"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+          <polyline points="17 1 21 5 17 9"></polyline>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          <polyline points="7 23 3 19 7 15"></polyline>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        </svg>
+        <span>عكس القيمتين ⇄</span>
+      </button>
+    </section>
+
+    <!-- 5. صندوق النتيجة المدمج (Result Card) -->
+    <section id="resultCard" class="cyber-card result-neutral rounded-xl p-3 sm:p-4 text-center space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-300">نسبة التغير / الفرق المئوي</span>
+        <div class="flex items-center gap-2">
+          <span id="toastMsg" class="text-[11px] text-amber-400 font-bold"></span>
+          <button
+            type="button"
+            id="copyBtn"
+            onclick="copyResult()"
+            class="px-3 py-1 rounded-lg bg-cyber-cyan/15 hover:bg-cyber-cyan/25 active:scale-95 border border-cyber-cyan/40 text-cyber-cyan text-[11px] font-bold transition"
+            title="نسخ الرقم الصافي فقط بدون علامة % أو إشارة"
+          >
+            نسخ النتيجة
+          </button>
+        </div>
+      </div>
+
+      <!-- النسبة المئوية بخط عريض وواضح -->
+      <div
+        id="resultPercent"
+        dir="ltr"
+        class="font-mono text-3xl sm:text-5xl font-extrabold tracking-tight text-glow-neutral leading-none py-0.5 select-all"
+      >
+        0.00%
+      </div>
+
+      <!-- النص التوضيحي التحليلي -->
+      <div
+        id="resultAnalysis"
+        class="rounded-lg bg-[#060913]/95 border border-cyber-cyan/25 py-2 px-3 text-xs sm:text-sm text-slate-200 font-medium leading-snug"
+      >
+        أدخل القيمتين في الأعلى لعرض تفاصيل المقارنة الفورية.
+      </div>
+    </section>
+
+    <!-- نافذة إرشادات تثبيت التطبيق (تظهر عند الضغط على تثبيت داخل إطار معاينة أو متصفح iOS) -->
+    <div
+      id="installModal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onclick="closeInstallModal(event)"
+    >
+      <div
+        class="cyber-card rounded-2xl max-w-sm w-full p-4 space-y-3 text-right border border-cyber-cyan/50 shadow-[0_0_30px_rgba(0,242,254,0.25)]"
+        onclick="event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-cyber-cyan/15 border border-cyber-cyan/40 flex items-center justify-center text-cyber-cyan font-mono font-bold text-xs">
+              %
+            </span>
+            <h3 class="text-sm font-extrabold text-white">تثبيت الحاسبة كتطبيق (PWA)</h3>
+          </div>
+          <button
+            type="button"
+            onclick="closeInstallModal()"
+            class="text-slate-400 hover:text-white text-sm px-1.5"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div id="installModalBody" class="text-xs text-slate-300 space-y-2 leading-relaxed">
+          <!-- يتم تعبئة الخطوات ديناميكياً حسب نوع الجهاز -->
+        </div>
+
+        <div class="pt-1 flex items-center gap-2">
+          <button
+            type="button"
+            onclick="downloadStandaloneFile()"
+            class="flex-1 py-2 px-3 rounded-xl bg-cyber-cyan/20 hover:bg-cyber-cyan/30 border border-cyber-cyan/50 text-cyber-cyan text-xs font-extrabold flex items-center justify-center gap-1.5 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>تنزيل ملف التطبيق (HTML)</span>
+          </button>
+          <button
+            type="button"
+            onclick="closeInstallModal()"
+            class="py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
+          >
+            إغلاق
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'smart_neon_calc_fx_v3';
+
+    // حالة التطبيق مع سجل الأرقام المحفوظة
+    const state = {
+      box1: { enabled: false, rate: '552', op: 'mul' },
+      box2: { enabled: false, rate: '552', op: 'mul' },
+      history: ['552'],
+      historyTarget: 1, // 1 أو 2 أو 'both'
+      lastCopiedNum: ''
+    };
+
+    const els = {
+      val1: document.getElementById('val1'),
+      val2: document.getElementById('val2'),
+      fxBox1: document.getElementById('fxBox1'),
+      fxBox2: document.getElementById('fxBox2'),
+      fxToggle1: document.getElementById('fxToggle1'),
+      fxToggle2: document.getElementById('fxToggle2'),
+      fxControls1: document.getElementById('fxControls1'),
+      fxControls2: document.getElementById('fxControls2'),
+      fxRate1: document.getElementById('fxRate1'),
+      fxRate2: document.getElementById('fxRate2'),
+      opMul1: document.getElementById('opMul1'),
+      opDiv1: document.getElementById('opDiv1'),
+      opMul2: document.getElementById('opMul2'),
+      opDiv2: document.getElementById('opDiv2'),
+      effBadge1: document.getElementById('effBadge1'),
+      effBadge2: document.getElementById('effBadge2'),
+      saveTag1: document.getElementById('saveTag1'),
+      saveTag2: document.getElementById('saveTag2'),
+      historyList: document.getElementById('historyList'),
+      targetBtn1: document.getElementById('targetBtn1'),
+      targetBtn2: document.getElementById('targetBtn2'),
+      targetBtnBoth: document.getElementById('targetBtnBoth'),
+      resultCard: document.getElementById('resultCard'),
+      resultPercent: document.getElementById('resultPercent'),
+      resultAnalysis: document.getElementById('resultAnalysis'),
+      toastMsg: document.getElementById('toastMsg'),
+      copyBtn: document.getElementById('copyBtn')
+    };
+
+    // تحويل الأرقام العربية/الفارسية إلى إنجليزية
+    function convertArabicPersianDigits(raw) {
+      if (!raw) return '';
+      const ar = '٠١٢٣٤٥٦٧٨٩';
+      const fa = '۰۱۲۳۴۵۶۷۸۹';
+      return String(raw)
+        .replace(/[٠-٩]/g, d => ar.indexOf(d))
+        .replace(/[۰-۹]/g, d => fa.indexOf(d))
+        .replace(/٫/g, '.');
+    }
+
+    // استخراج الرقم فقط من أي نص ملصق يحتوي على كلمات أو عملات
+    // مثال: "إجمالي السعر: 586.85 ريال يمني" ➔ "586.85"
+    function extractValidNumberString(raw) {
+      if (!raw) return '';
+      let s = convertArabicPersianDigits(raw);
+
+      // إزالة فواصل الآلاف الواقعة بين الأرقام (مثل 1,250.50 -> 1250.50)
+      s = s.replace(/(\d)[,،٬\s]+(?=\d{3}(?:\D|$))/g, '$1');
+
+      // إذا لم توجد نقطة عشرية ووجدت فاصلة عشرية قبل رقمين (مثل 586,85) نحولها لنقطة
+      if (!s.includes('.') && /\d[,،]\d{1,4}(?!\d)/.test(s)) {
+        s = s.replace(/(\d)[,،](\d{1,4})(?!\d)/, '$1.$2');
+      }
+
+      // إزالة أي فواصل متبقية
+      s = s.replace(/[,،٬]/g, '');
+
+      // استخراج جميع الأرقام من داخل النص
+      const matches = s.match(/-?\d+(?:\.\d+)?/g);
+      if (!matches || matches.length === 0) return '';
+
+      // تفضيل الرقم العشري إن وجد أكثر من رقم في النص، وإلا أخذ الرقم الأول
+      const decimalNum = matches.find(m => m.includes('.'));
+      return decimalNum ? decimalNum.replace(/^-/, '') : matches[0].replace(/^-/, '');
+    }
+
+    // تنظيف الحقل أثناء الكتابة المباشرة أو اللصق من شريط الكيبورد
+    function sanitizeFieldInput(raw) {
+      if (!raw) return '';
+      const converted = convertArabicPersianDigits(raw);
+
+      // إذا كان المدخل يحتوي على حروف أو كلمات (مثل لصق "إجمالي السعر: 586.85 ريال يمني")
+      // نقوم باستخراج الرقم الصافي فوراً
+      if (/[^\d.\-\s,،٬]/.test(converted)) {
+        return extractValidNumberString(converted);
+      }
+
+      // أثناء الكتابة اليدوية العادية نحافظ على النقطة العشرية لتمكين إكمال الرقم (مثل 586. ثم 85)
+      let clean = converted.replace(/[,،٬\s]/g, '');
+      const parts = clean.split('.');
+      if (parts.length > 2) {
+        clean = parts[0] + '.' + parts.slice(1).join('');
+      }
+      return clean.replace(/[^0-9.]/g, '');
+    }
+
+    // استخراج الرقم الصافي فقط بدون أي إشارات (+ أو -) وبدون علامة %
+    function extractUnsignedPureNumber(raw) {
+      const s = convertArabicPersianDigits(raw).replace(/[,،٬\s]/g, '');
+      const match = s.match(/\d+(?:\.\d+)?/);
+      return match ? match[0] : '0.00';
+    }
+
+    function parseNum(raw) {
+      const s = extractValidNumberString(raw);
+      if (!s || s === '-' || s === '.') return NaN;
+      return parseFloat(s);
+    }
+
+    function formatNum(num) {
+      if (!Number.isFinite(num)) return '0';
+      return Number(num.toFixed(4)).toLocaleString('en-US', {
+        maximumFractionDigits: 4
+      });
+    }
+
+    function showToast(msg, duration = 2200) {
+      els.toastMsg.textContent = msg;
+      clearTimeout(showToast.timer);
+      if (msg) {
+        showToast.timer = setTimeout(() => {
+          els.toastMsg.textContent = '';
+        }, duration);
+      }
+    }
+
+    // ضمان وضع المؤشر في نهاية الرقم عند النقر على الحقل لمنع الكتابة المعكوسة
+    function forceCursorToEnd(inputEl) {
+      try {
+        const len = inputEl.value.length;
+        inputEl.setSelectionRange(len, len);
+      } catch (e) {}
+    }
+
+    [els.val1, els.val2, els.fxRate1, els.fxRate2].forEach((inputEl, idx) => {
+      // عند التركيز على الحقل يوضع المؤشر في نهاية الرقم دائماً
+      inputEl.addEventListener('focus', () => {
+        if (idx === 0 || idx === 2) setHistoryTarget(1);
+        if (idx === 1 || idx === 3) setHistoryTarget(2);
+        setTimeout(() => forceCursorToEnd(inputEl), 0);
+      });
+
+      // عند النقر داخل المربع لإكمال الرقم، يوضع المؤشر في نهاية الرقم ليكمل طبيعياً (مثل 54 -> 546.98)
+      inputEl.addEventListener('click', () => {
+        if (inputEl.selectionStart === inputEl.selectionEnd) {
+          forceCursorToEnd(inputEl);
+        }
+      });
+
+      // فلترة النصوص الملصقة أو المكتوبة وإبقاء الأرقام فقط مع وضع المؤشر في النهاية
+      inputEl.addEventListener('input', () => {
+        const cleaned = sanitizeFieldInput(inputEl.value);
+        if (cleaned !== inputEl.value) {
+          inputEl.value = cleaned;
+          forceCursorToEnd(inputEl);
+        }
+      });
+    });
+
+    // استرجاع الإعدادات والسجل من localStorage
+    function loadSavedSettings() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.box1) Object.assign(state.box1, parsed.box1);
+          if (parsed.box2) Object.assign(state.box2, parsed.box2);
+          if (Array.isArray(parsed.history) && parsed.history.length > 0) {
+            state.history = parsed.history;
+          }
+        }
+      } catch (e) {}
+
+      els.fxToggle1.checked = !!state.box1.enabled;
+      els.fxRate1.value = state.box1.rate || '552';
+
+      els.fxToggle2.checked = !!state.box2.enabled;
+      els.fxRate2.value = state.box2.rate || '552';
+
+      syncFxUI();
+      renderHistory();
+    }
+
+    function persistState(boxNum) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          box1: state.box1,
+          box2: state.box2,
+          history: state.history
+        }));
+        if (boxNum) {
+          const tag = boxNum === 1 ? els.saveTag1 : els.saveTag2;
+          tag.classList.remove('opacity-0');
+          tag.classList.add('opacity-100');
+          setTimeout(() => {
+            tag.classList.remove('opacity-100');
+            tag.classList.add('opacity-0');
+          }, 1000);
+        }
+      } catch (e) {}
+    }
+
+    // حفظ رقم الضرب أو القسمة في السجل
+    function addNumberToHistory(rawRate) {
+      const cleaned = extractValidNumberString(rawRate);
+      if (!cleaned || Number.isNaN(parseFloat(cleaned)) || parseFloat(cleaned) === 0) return false;
+
+      // إزالة التكرار ووضع الرقم الجديد في المقدمة
+      state.history = [cleaned, ...state.history.filter(item => item !== cleaned)].slice(0, 12);
+      persistState();
+      renderHistory();
+      return true;
+    }
+
+    function saveRateToHistory(boxNum) {
+      const inputEl = boxNum === 1 ? els.fxRate1 : els.fxRate2;
+      const ok = addNumberToHistory(inputEl.value);
+      if (ok) {
+        showToast(`تم حفظ الرقم (${extractValidNumberString(inputEl.value)}) في السجل ✓`, 1600);
+      } else {
+        showToast('أدخل رقم صرف صالح لحفظه في السجل');
+      }
+    }
+
+    function deleteFromHistory(rateStr, event) {
+      event.stopPropagation();
+      state.history = state.history.filter(item => item !== rateStr);
+      persistState();
+      renderHistory();
+    }
+
+    function setHistoryTarget(target) {
+      state.historyTarget = target;
+      const activeClass = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyber-cyan text-[#040814]';
+      const inactiveClass = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-300';
+
+      els.targetBtn1.className = target === 1 ? activeClass : inactiveClass;
+      els.targetBtn2.className = target === 2 ? activeClass : inactiveClass;
+      els.targetBtnBoth.className = target === 'both'
+        ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-cyber-cyan text-[#040814]'
+        : 'px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300';
+    }
+
+    function applyHistoryRate(rateStr) {
+      if (state.historyTarget === 1 || state.historyTarget === 'both') {
+        state.box1.rate = rateStr;
+        state.box1.enabled = true;
+        els.fxRate1.value = rateStr;
+        els.fxToggle1.checked = true;
+      }
+      if (state.historyTarget === 2 || state.historyTarget === 'both') {
+        state.box2.rate = rateStr;
+        state.box2.enabled = true;
+        els.fxRate2.value = rateStr;
+        els.fxToggle2.checked = true;
+      }
+      syncFxUI();
+      persistState();
+      calculate();
+      showToast(`تم اختيار ${rateStr} ✓`, 1200);
+    }
+
+    function renderHistory() {
+      if (!state.history.length) {
+        els.historyList.innerHTML = `<span class="text-[11px] text-slate-500">لا توجد أرقام محفوظة بعد — اضغط "حفظ+" لإضافة رقم.</span>`;
+        return;
+      }
+
+      els.historyList.innerHTML = state.history.map(rate => `
+        <div
+          onclick="applyHistoryRate('${rate}')"
+          class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#060b16] hover:bg-cyber-cyan/15 border border-cyber-cyan/35 text-cyber-cyan text-xs font-mono font-bold cursor-pointer active:scale-95 transition select-none"
+        >
+          <span>${rate}</span>
+          <button
+            type="button"
+            onclick="deleteFromHistory('${rate}', event)"
+            class="text-slate-500 hover:text-rose-400 text-[10px] leading-none px-0.5"
+            title="حذف من السجل"
+          >✕</button>
+        </div>
+      `).join('');
+    }
+
+    function syncFxUI() {
+      els.fxControls1.classList.toggle('fx-disabled', !state.box1.enabled);
+      els.fxBox1.classList.toggle('border-cyber-cyan/40', !!state.box1.enabled);
+      els.opMul1.classList.toggle('active', state.box1.op === 'mul');
+      els.opDiv1.classList.toggle('active', state.box1.op === 'div');
+
+      els.fxControls2.classList.toggle('fx-disabled', !state.box2.enabled);
+      els.fxBox2.classList.toggle('border-cyber-cyan/40', !!state.box2.enabled);
+      els.opMul2.classList.toggle('active', state.box2.op === 'mul');
+      els.opDiv2.classList.toggle('active', state.box2.op === 'div');
+    }
+
+    function setBoxOp(boxNum, op) {
+      if (boxNum === 1) {
+        state.box1.op = op;
+      } else {
+        state.box2.op = op;
+      }
+      syncFxUI();
+      persistState(boxNum);
+      calculate();
+    }
+
+    function clearField(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = '';
+        el.focus();
+        calculate();
+      }
+    }
+
+    // عكس القيمتين (تبديل V1 و V2)
+    function swapValues() {
+      const tempVal = els.val1.value;
+      els.val1.value = els.val2.value;
+      els.val2.value = tempVal;
+
+      // عكس إعدادات المصارفة أيضاً إذا كانت مختلفة
+      const tempBox = { ...state.box1 };
+      state.box1 = { ...state.box2 };
+      state.box2 = tempBox;
+
+      els.fxToggle1.checked = state.box1.enabled;
+      els.fxRate1.value = state.box1.rate;
+      els.fxToggle2.checked = state.box2.enabled;
+      els.fxRate2.value = state.box2.rate;
+
+      syncFxUI();
+      persistState();
+      calculate();
+      showToast('تم عكس القيمتين ⇄', 1200);
+    }
+
+    // لصق ذكي متوافق مع الهواتف والمتصفحات وبيئة المعاينة
+    let activePasteInputId = 'val1';
+    async function handleSmartPaste(inputId, btnId) {
+      activePasteInputId = inputId;
+      const inputEl = document.getElementById(inputId);
+      const btnEl = document.getElementById(btnId);
+
+      // 1. تركيز متزامن فوري (مهم جداً لفتح لوحة المفاتيح وشريط الحافظة على الهواتف)
+      inputEl.focus();
+      forceCursorToEnd(inputEl);
+
+      // 2. محاولة القراءة المباشرة من الحافظة إن كانت متاحة
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const clipText = await navigator.clipboard.readText();
+          const cleaned = extractValidNumberString(clipText);
+          if (cleaned) {
+            inputEl.value = cleaned;
+            forceCursorToEnd(inputEl);
+            calculate();
+            const oldHTML = btnEl.innerHTML;
+            btnEl.innerHTML = '<span>تم ✓</span>';
+            setTimeout(() => { btnEl.innerHTML = oldHTML; }, 900);
+            return;
+          }
+        }
+      } catch (e) {
+        // المتصفح أو الإطار يقيد القراءة التلقائية بدون لصق مباشر
+      }
+
+      // 3. محاولة أمر اللصق المباشر
+      try {
+        const pasted = document.execCommand('paste');
+        if (pasted) return;
+      } catch (e) {}
+
+      // 4. إذا كان هناك رقم منسوخ داخلياً أو عبر الحافظة، أو تنبيه المستخدم للصق بضغطة واحدة من شريط الكيبورد المفتوح الآن
+      if (state.lastCopiedNum) {
+        inputEl.value = state.lastCopiedNum;
+        forceCursorToEnd(inputEl);
+        calculate();
+        showToast('تم اللصق ✓', 1200);
+      } else {
+        inputEl.select();
+        showToast('الحقل جاهز — اختر الرقم من شريط الحافظة أعلى الكيبورد أو Ctrl+V', 2600);
+      }
+    }
+
+    // التقاط حدث اللصق في أي مكان في الصفحة ووضعه في الحقل النشط فوراً
+    window.addEventListener('paste', (e) => {
+      const target = document.activeElement;
+      const isInput = target && (target.id === 'val1' || target.id === 'val2' || target.id === 'fxRate1' || target.id === 'fxRate2');
+      const destInput = isInput ? target : document.getElementById(activePasteInputId || 'val1');
+
+      const raw = (e.clipboardData || window.clipboardData).getData('text');
+      const cleaned = extractValidNumberString(raw);
+      if (cleaned && destInput) {
+        e.preventDefault();
+        destInput.value = cleaned;
+        forceCursorToEnd(destInput);
+        state.lastCopiedNum = cleaned;
+        if (destInput.id === 'fxRate1') {
+          state.box1.rate = cleaned;
+          addNumberToHistory(cleaned);
+        } else if (destInput.id === 'fxRate2') {
+          state.box2.rate = cleaned;
+          addNumberToHistory(cleaned);
+        }
+        calculate();
+        showToast('تم اللصق بنجاح ✓', 1200);
+      }
+    });
+
+    function computeEffective(rawVal, boxState) {
+      const base = parseNum(rawVal);
+      if (Number.isNaN(base)) return { valid: false, value: NaN };
+
+      if (!boxState.enabled) {
+        return { valid: true, value: base };
+      }
+
+      const rate = parseNum(boxState.rate);
+      if (Number.isNaN(rate) || rate === 0) {
+        return { valid: false, error: 'سعر الصرف لا يمكن أن يكون صفراً' };
+      }
+
+      const value = boxState.op === 'mul' ? base * rate : base / rate;
+      return { valid: true, value };
+    }
+
+    function handleCalculateClick() {
+      // عند الضغط على تحديث/حساب نحفظ أيضاً أرقام الصرف المكتوبة في السجل تلقائياً
+      if (state.box1.enabled && els.fxRate1.value) addNumberToHistory(els.fxRate1.value);
+      if (state.box2.enabled && els.fxRate2.value) addNumberToHistory(els.fxRate2.value);
+      calculate();
+    }
+
+    function calculate() {
+      const r1 = computeEffective(els.val1.value, state.box1);
+      const r2 = computeEffective(els.val2.value, state.box2);
+
+      els.effBadge1.textContent = r1.valid ? formatNum(r1.value) : '0';
+      els.effBadge2.textContent = r2.valid ? formatNum(r2.value) : '0';
+
+      if (r1.error || r2.error) {
+        showToast(r1.error || r2.error);
+        setNeutralResult('تحقق من رقم الضرب / القسمة المدخل.');
+        return;
+      }
+
+      if (!r1.valid || !r2.valid) {
+        setNeutralResult('أدخل القيمتين في الأعلى لعرض تفاصيل المقارنة الفورية.');
+        return;
+      }
+
+      const v1 = r1.value;
+      const v2 = r2.value;
+
+      if (v1 === 0) {
+        if (v2 === 0) {
+          setNeutralResult('القيمتان متطابقتان عند الصفر (0).');
+        } else {
+          showToast('لا يمكن القسمة على صفر (V1 = 0)');
+          setNeutralResult('القيمة المرجعية (الأساس) لا يمكن أن تكون صفراً.');
+        }
+        return;
+      }
+
+      const diff = v2 - v1;
+      const percent = (diff / Math.abs(v1)) * 100;
+      const absPercent = Math.abs(percent).toFixed(2);
+
+      els.resultCard.classList.remove('result-positive', 'result-negative', 'result-neutral');
+      els.resultPercent.classList.remove('text-glow-positive', 'text-glow-negative', 'text-glow-neutral');
+
+      if (percent > 0) {
+        els.resultCard.classList.add('result-positive');
+        els.resultPercent.classList.add('text-glow-positive');
+        els.resultPercent.textContent = `+${absPercent}%`;
+        els.resultAnalysis.innerHTML = `ارتفاع بـ <strong dir="ltr" class="font-mono text-cyber-green">${absPercent}%</strong> مقارنة بـ <span dir="ltr" class="font-mono text-cyber-cyan font-bold">${formatNum(v1)}</span> ➔ <span dir="ltr" class="font-mono text-cyber-green font-bold">${formatNum(v2)}</span>`;
+      } else if (percent < 0) {
+        els.resultCard.classList.add('result-negative');
+        els.resultPercent.classList.add('text-glow-negative');
+        els.resultPercent.textContent = `-${absPercent}%`;
+        els.resultAnalysis.innerHTML = `انخفاض بـ <strong dir="ltr" class="font-mono text-cyber-red">${absPercent}%</strong> مقارنة بـ <span dir="ltr" class="font-mono text-cyber-cyan font-bold">${formatNum(v1)}</span> ➔ <span dir="ltr" class="font-mono text-cyber-red font-bold">${formatNum(v2)}</span>`;
+      } else {
+        els.resultCard.classList.add('result-neutral');
+        els.resultPercent.classList.add('text-glow-neutral');
+        els.resultPercent.textContent = '0.00%';
+        els.resultAnalysis.innerHTML = `استقرار تام (<strong dir="ltr" class="font-mono text-cyber-cyan">0.00%</strong>) بين <span dir="ltr" class="font-mono text-cyber-cyan font-bold">${formatNum(v1)}</span> و <span dir="ltr" class="font-mono text-cyber-cyan font-bold">${formatNum(v2)}</span>`;
+      }
+    }
+
+    function setNeutralResult(msg) {
+      els.resultCard.classList.remove('result-positive', 'result-negative');
+      els.resultCard.classList.add('result-neutral');
+      els.resultPercent.classList.remove('text-glow-positive', 'text-glow-negative');
+      els.resultPercent.classList.add('text-glow-neutral');
+      els.resultPercent.textContent = '0.00%';
+      els.resultAnalysis.textContent = msg;
+    }
+
+    // نسخ الرقم الصافي فقط بدون علامة % وبدون إشارة + أو - وبدون أي نص إضافي
+    function copyResult() {
+      const cleanNumber = extractUnsignedPureNumber(els.resultPercent.textContent);
+      state.lastCopiedNum = cleanNumber;
+
+      const temp = document.createElement('textarea');
+      temp.value = cleanNumber;
+      temp.setAttribute('readonly', '');
+      temp.style.position = 'fixed';
+      temp.style.top = '-9999px';
+      temp.style.opacity = '0';
+      document.body.appendChild(temp);
+      temp.focus();
+      temp.select();
+
+      let copiedFallback = false;
+      try {
+        copiedFallback = document.execCommand('copy');
+      } catch (e) {
+        copiedFallback = false;
+      } finally {
+        document.body.removeChild(temp);
+      }
+
+      const showCopyFeedback = () => {
+        clearTimeout(copyResult.timer);
+        els.copyBtn.textContent = `تم نسخ: ${cleanNumber} ✓`;
+        copyResult.timer = setTimeout(() => {
+          els.copyBtn.textContent = 'نسخ النتيجة';
+        }, 1400);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cleanNumber)
+          .then(showCopyFeedback)
+          .catch(() => {
+            if (copiedFallback) showCopyFeedback();
+          });
+      } else if (copiedFallback) {
+        showCopyFeedback();
+      }
+    }
+
+    // ربط الأحداث بالحساب الفوري والحفظ التلقائي
+    els.val1.addEventListener('input', calculate);
+    els.val2.addEventListener('input', calculate);
+
+    els.fxToggle1.addEventListener('change', () => {
+      state.box1.enabled = els.fxToggle1.checked;
+      syncFxUI();
+      persistState(1);
+      calculate();
+    });
+
+    els.fxRate1.addEventListener('input', () => {
+      state.box1.rate = els.fxRate1.value;
+      persistState(1);
+      calculate();
+    });
+
+    els.fxRate1.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveRateToHistory(1);
+    });
+
+    els.fxToggle2.addEventListener('change', () => {
+      state.box2.enabled = els.fxToggle2.checked;
+      syncFxUI();
+      persistState(2);
+      calculate();
+    });
+
+    els.fxRate2.addEventListener('input', () => {
+      state.box2.rate = els.fxRate2.value;
+      persistState(2);
+      calculate();
+    });
+
+    els.fxRate2.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveRateToHistory(2);
+    });
+
+    // ==========================================
+    // إعداد تطبيق الويب التقدمي (PWA: Manifest + Icon + Service Worker + Install Prompt)
+    // ==========================================
+    let deferredInstallPrompt = null;
+
+    function createCyberIconDataURL(size = 512) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // خلفية داكنة مستقبلية
+      const bgGrad = ctx.createLinearGradient(0, 0, size, size);
+      bgGrad.addColorStop(0, '#050811');
+      bgGrad.addColorStop(1, '#101b33');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, size * 0.22);
+      ctx.fill();
+
+      // إطار نيون متوهج
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = size * 0.04;
+      ctx.shadowColor = '#00f2fe';
+      ctx.shadowBlur = size * 0.06;
+      ctx.strokeRect(size * 0.08, size * 0.08, size * 0.84, size * 0.84);
+
+      // رمز النسبة المئوية والسهم
+      ctx.fillStyle = '#00f2fe';
+      ctx.font = `900 ${Math.round(size * 0.42)}px "JetBrains Mono", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('%', size * 0.5, size * 0.46);
+
+      ctx.fillStyle = '#00ff9d';
+      ctx.font = `800 ${Math.round(size * 0.14)}px "JetBrains Mono", sans-serif`;
+      ctx.fillText('V1 ➔ V2', size * 0.5, size * 0.78);
+
+      return canvas.toDataURL('image/png');
+    }
+
+    function setupPWA() {
+      try {
+        const icon192 = createCyberIconDataURL(192);
+        const icon512 = createCyberIconDataURL(512);
+
+        // إضافة أيقونة لشاشة آيفون ورمز المتصفح
+        const appleTouch = document.createElement('link');
+        appleTouch.rel = 'apple-touch-icon';
+        appleTouch.href = icon192;
+        document.head.appendChild(appleTouch);
+
+        const favIcon = document.createElement('link');
+        favIcon.rel = 'icon';
+        favIcon.type = 'image/png';
+        favIcon.href = icon192;
+        document.head.appendChild(favIcon);
+
+        // إنشاء ملف Web App Manifest ديناميكياً داخل الملف الواحد
+        const manifestObj = {
+          name: 'نسبة التغير | الحاسبة الذكية',
+          short_name: 'حاسبة التغير',
+          description: 'حاسبة ذكية لحساب ومقارنة نسبة التغير والفرق المئوي مع المصارفة الفورية',
+          lang: 'ar',
+          dir: 'rtl',
+          start_url: window.location.href,
+          scope: './',
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#050811',
+          theme_color: '#050811',
+          icons: [
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+
+        // تسجيل Service Worker متكامل لتخزين الصفحة والخطوط والعمل بدون إنترنت (Offline First)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+          const swCode = `
+            const CACHE_NAME = 'smart-neon-calc-offline-v2';
+            const ASSETS = [
+              location.href,
+              'https://cdn.tailwindcss.com',
+              'https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap'
+            ];
+            self.addEventListener('install', (e) => {
+              e.waitUntil(
+                caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
+              );
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', (e) => {
+              e.waitUntil(
+                caches.keys().then((keys) => Promise.all(
+                  keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+                )).then(() => self.clients.claim())
+              );
+            });
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(
+                caches.match(e.request).then((cached) => {
+                  const networkFetch = fetch(e.request).then((response) => {
+                    if (response && response.status === 200) {
+                      const clone = response.clone();
+                      caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone)).catch(() => {});
+                    }
+                    return response;
+                  }).catch(() => cached);
+                  return cached || networkFetch;
+                })
+              );
+            });
+          `;
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+      } catch (e) {}
+
+      // تحديث شارة حالة العمل بدون إنترنت
+      const updateOnlineBadge = () => {
+        const badge = document.getElementById('offlineStatusBadge');
+        if (!badge) return;
+        if (navigator.onLine) {
+          badge.textContent = 'جاهز بدون نت ✓';
+          badge.className = 'shrink-0 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[9px] font-bold';
+        } else {
+          badge.textContent = 'وضع بدون إنترنت 📴';
+          badge.className = 'shrink-0 px-1.5 py-0.5 rounded-full bg-cyber-cyan/20 border border-cyber-cyan/50 text-cyber-cyan text-[9px] font-bold';
+        }
+      };
+      window.addEventListener('online', updateOnlineBadge);
+      window.addEventListener('offline', updateOnlineBadge);
+      updateOnlineBadge();
+
+      // إخفاء زر التثبيت إذا كان التطبيق يعمل بالفعل في وضع التطبيق المستقل (Standalone)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        const btn = document.getElementById('installAppBtn');
+        if (btn) btn.classList.add('hidden');
+      }
+    }
+
+    // التقاط حدث التثبيت الرسمي في متصفحات Chrome / Edge / Android
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btnText = document.getElementById('installBtnText');
+      if (btnText) btnText.textContent = 'تثبيت الآن 📲';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      showToast('تم تثبيت التطبيق للعمل بدون إنترنت ✓', 2500);
+      const btn = document.getElementById('installAppBtn');
+      if (btn) btn.classList.add('hidden');
+    });
+
+    async function triggerInstallApp() {
+      // 1. إذا كان المتصفح يدعم نافذة التثبيت المباشرة (Chrome / Edge / Android)
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredInstallPrompt = null;
+          showToast('جاري تثبيت التطبيق للعمل بدون إنترنت ✓', 2000);
+        }
+        return;
+      }
+
+      // 2. إذا كانت الصفحة مفتوحة داخل معاينة أو متصفح iOS/Safari نعرض خطوات التثبيت والعمل بدون إنترنت
+      const modal = document.getElementById('installModal');
+      const body = document.getElementById('installModalBody');
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isInIframe = window.self !== window.top;
+
+      let stepsHTML = '';
+      if (isInIframe) {
+        stepsHTML += `
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px]">
+            <strong>تثبيت للاستخدام بدون إنترنت (Offline):</strong><br/>
+            الحاسبة مدمجة بالكامل وتعمل في الهاتف بدون الحاجة للإنترنت عبر إحدى الطريقتين:
+          </div>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
+            <li>اضغط على زر <strong>"تنزيل ملف التطبيق (HTML)"</strong> بالأسفل لحفظ الحاسبة في هاتفك وفتحها في أي وقت <strong>بدون إنترنت</strong>.</li>
+            <li>بعد فتح الملف في متصفح <strong>Chrome</strong> أو <strong>Safari</strong>، اضغط قائمة المتصفح <span class="text-cyber-cyan font-bold">(⋮)</span> ثم اختر <strong>"الإضافة إلى الشاشة الرئيسية"</strong> لتظهر كأيقونة تطبيق على شاشة هاتفك.</li>
+          </ol>
+        `;
+      } else if (isIOS) {
+        stepsHTML += `
+          <p class="text-slate-200 font-bold">لتثبيت الحاسبة في آيفون والعمل بدون إنترنت:</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
+            <li>اضغط على زر <strong>المشاركة (Share)</strong> في أسفل متصفح Safari.</li>
+            <li>اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong> ثم اضغط <strong>إضافة</strong>.</li>
+            <li>أو اضغط <strong>"تنزيل ملف التطبيق"</strong> بالأسفل لحفظ نسخة أوفلاين في تطبيق الملفات.</li>
+          </ol>
+        `;
+      } else {
+        stepsHTML += `
+          <p class="text-slate-200 font-bold">لتثبيت الحاسبة في الهاتف والعمل بدون إنترنت:</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
+            <li>افتح قائمة المتصفح العلوية <span class="text-cyber-cyan font-bold">(⋮)</span> ثم اختر <strong>"تثبيت التطبيق"</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.</li>
+            <li>أو اضغط على <strong>"تنزيل ملف التطبيق (HTML)"</strong> بالأسفل لحفظ الحاسبة في جهازك وتشغيلها مباشرة بدون إنترنت.</li>
+          </ol>
+        `;
+      }
+
+      body.innerHTML = stepsHTML;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeInstallModal(e) {
+      const modal = document.getElementById('installModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function downloadStandaloneFile() {
+      try {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'smart-change-calculator.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('تم تنزيل ملف التطبيق بنجاح ✓', 2000);
+      } catch (e) {
+        showToast('تعذر التنزيل المباشر');
+      }
+    }
+
+    // تشغيل أولي
+    setupPWA();
+    loadSavedSettings();
+    calculate();
+  </script>
+</body>
+</html>
