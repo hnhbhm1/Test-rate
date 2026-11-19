@@ -678,22 +678,10 @@
         <div class="pt-1 flex items-center gap-2">
           <button
             type="button"
-            onclick="downloadStandaloneFile()"
-            class="flex-1 py-2 px-3 rounded-xl bg-cyber-cyan/20 hover:bg-cyber-cyan/30 border border-cyber-cyan/50 text-cyber-cyan text-xs font-extrabold flex items-center justify-center gap-1.5 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>تنزيل ملف التطبيق (HTML)</span>
-          </button>
-          <button
-            type="button"
             onclick="closeInstallModal()"
-            class="py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition"
+            class="w-full py-2 px-4 rounded-xl bg-cyber-cyan/20 hover:bg-cyber-cyan/30 border border-cyber-cyan/50 text-cyber-cyan text-xs font-extrabold transition"
           >
-            إغلاق
+            حسناً، فهمت
           </button>
         </div>
       </div>
@@ -1467,35 +1455,28 @@
       const modal = document.getElementById('installModal');
       const body = document.getElementById('installModalBody');
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      const isInIframe = window.self !== window.top;
 
       let stepsHTML = '';
-      if (isInIframe) {
+      if (isIOS) {
         stepsHTML += `
           <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px]">
-            <strong>تثبيت للاستخدام بدون إنترنت (Offline):</strong><br/>
-            الحاسبة مدمجة بالكامل وتعمل في الهاتف بدون الحاجة للإنترنت عبر إحدى الطريقتين:
+            <strong>تثبيت التطبيق على آيفون للعمل بدون إنترنت:</strong>
           </div>
           <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
-            <li>اضغط على زر <strong>"تنزيل ملف التطبيق (HTML)"</strong> بالأسفل لحفظ الحاسبة في هاتفك وفتحها في أي وقت <strong>بدون إنترنت</strong>.</li>
-            <li>بعد فتح الملف في متصفح <strong>Chrome</strong> أو <strong>Safari</strong>، اضغط قائمة المتصفح <span class="text-cyber-cyan font-bold">(⋮)</span> ثم اختر <strong>"الإضافة إلى الشاشة الرئيسية"</strong> لتظهر كأيقونة تطبيق على شاشة هاتفك.</li>
-          </ol>
-        `;
-      } else if (isIOS) {
-        stepsHTML += `
-          <p class="text-slate-200 font-bold">لتثبيت الحاسبة في آيفون والعمل بدون إنترنت:</p>
-          <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
             <li>اضغط على زر <strong>المشاركة (Share)</strong> في أسفل متصفح Safari.</li>
-            <li>اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong> ثم اضغط <strong>إضافة</strong>.</li>
-            <li>أو اضغط <strong>"تنزيل ملف التطبيق"</strong> بالأسفل لحفظ نسخة أوفلاين في تطبيق الملفات.</li>
+            <li>اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong>.</li>
+            <li>اضغط <strong>إضافة (Add)</strong> لتثبيت الحاسبة كتطبيق مستقل يعمل بدون إنترنت.</li>
           </ol>
         `;
       } else {
         stepsHTML += `
-          <p class="text-slate-200 font-bold">لتثبيت الحاسبة في الهاتف والعمل بدون إنترنت:</p>
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px]">
+            <strong>تثبيت التطبيق في الهاتف للعمل بدون إنترنت:</strong>
+          </div>
           <ol class="list-decimal list-inside space-y-1.5 text-slate-200">
-            <li>افتح قائمة المتصفح العلوية <span class="text-cyber-cyan font-bold">(⋮)</span> ثم اختر <strong>"تثبيت التطبيق"</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.</li>
-            <li>أو اضغط على <strong>"تنزيل ملف التطبيق (HTML)"</strong> بالأسفل لحفظ الحاسبة في جهازك وتشغيلها مباشرة بدون إنترنت.</li>
+            <li>افتح قائمة المتصفح العلوية <span class="text-cyber-cyan font-bold">(⋮)</span>.</li>
+            <li>اختر <strong>"تثبيت التطبيق" (Install App)</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.</li>
+            <li>سيتم تثبيت الحاسبة مباشرة كأيقونة تطبيق على شاشة هاتفك وتعمل بدون إنترنت.</li>
           </ol>
         `;
       }
@@ -1509,24 +1490,6 @@
       const modal = document.getElementById('installModal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-    }
-
-    function downloadStandaloneFile() {
-      try {
-        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'smart-change-calculator.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('تم تنزيل ملف التطبيق بنجاح ✓', 2000);
-      } catch (e) {
-        showToast('تعذر التنزيل المباشر');
-      }
     }
 
     // تشغيل أولي
